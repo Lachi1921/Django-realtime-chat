@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row align-items-center justify-content-center min-vh-100 gx-0">
+    
+        <div class="col-12 col-md-5 col-lg-4">
+            <div class="card card-shadow border-0">
+                <div class="card-body">
+                    <div class="row g-6">
+                        <div class="col-12">
+                            <div class="text-center">
+                                <h3 class="fw-bold mb-2">Sign Up</h3>
+                                <p>Follow the easy steps</p>
+                            </div>
+                        </div>
+                        <form method="POST">
+                            {% for error in registration_form.non_field_errors %}
+                                <p class="text-danger">{{ error }}</p>
+                            {% endfor %}
+                            {% csrf_token %}
+                            <div class="col-12">
+                                <div class="form-floating mb-4">
+                                    <input type="text" class="form-control" name="username" required id="signup-username" placeholder="Username">
+                                    <label for="signup-username">Username</label>
+                                    {% for error in registration_form.username.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+        
+                            <div class="col-12">
+                                <div class="form-floating mb-4">
+                                    <input type="email" name="email" class="form-control" required id="signup-email" placeholder="Email">
+                                    <label for="signup-email">Email</label>
+                                    {% for error in registration_form.email.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+        
+                            <div class="col-12">
+                                <div class="form-floating mb-4">
+                                    <input type="password" name="password1" class="form-control" required id="signup-password" placeholder="Password">
+                                    <label for="signup-password">Password</label>
+                                    {% for error in registration_form.password.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <button class="btn btn-block btn-lg btn-primary w-100" type="submit">Create Account</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Text -->
+            <div class="text-center mt-8">
+                <p>Already have an account? <a href="{% url "core:login" %}">Sign in</a></p>
+            </div>
+    
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

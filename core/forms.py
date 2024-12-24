@@ -12,11 +12,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "email", "password1")
-    
-    def __init__(self, *args, **kwargs):
-        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
-        del self.fields['password2']
+        fields = ("username", "email", "password1", "password2")
 
 class GroupForm(forms.ModelForm):
     members = forms.ModelMultipleChoiceField(queryset=User.objects.all(), widget=forms.CheckboxSelectMultiple)

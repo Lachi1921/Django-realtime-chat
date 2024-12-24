@@ -86,8 +86,8 @@ class Mute(models.Model):
 class Files(models.Model):
     message = models.ForeignKey('Message', related_name="file_message", on_delete=models.CASCADE)
     name = models.CharField(max_length=200)
-    file_path = models.FileField(upload_to=user_message_file_path)
-    image_path = models.FileField(upload_to=user_message_image_path)
+    file_path = models.FileField(upload_to=user_message_file_path, blank=True, null=True)
+    image_path = models.FileField(upload_to=user_message_image_path, blank=True, null=True)
 
     def __str__(self):
         return f'File for message {self.message.id}'

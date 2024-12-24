@@ -12276,8 +12276,7 @@
                     , previewsContainer: dzPreviewRow
                     , previewTemplate: '\n<div class="theme-file-preview position-relative mx-2">\n    <div class="avatar avatar-lg dropzone-file-preview">\n        <span class="avatar-text rounded bg-secondary text-body file-title">\n            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><polyline points="13 2 13 9 20 9"></polyline></svg>\n        </span>\n    </div>\n\n    <div class="avatar avatar-lg dropzone-image-preview">\n        <img src="#" class="avatar-img rounded file-title" data-dz-thumbnail="" alt="" >\n    </div>\n\n    <a class="badge badge-circle bg-body text-white position-absolute top-0 end-0 m-2" href="#" data-dz-remove="">\n        <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>\n    </a>\n</div>\n',
                     autoProcessQueue: false,
-                    uploadMultiple: true,
-                    maxFiles: 2,
+                    maxFiles: 1,
                     maxFilesize: 10,
                     headers: {
                         'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -12320,111 +12319,113 @@
                     }
 
                 }),
-                    ti.on("addedfile", (function (e) {
-                        let o = document.querySelectorAll(".theme-file-preview");
-                        o = o[o.length - 1].querySelectorAll(".file-title");
-                        for (let i = 0; i < o.length; i++) o[i].title = e.name;
+                ti.on("addedfile", (function (e) {
+                    let o = document.querySelectorAll(".theme-file-preview");
+                    o = o[o.length - 1].querySelectorAll(".file-title");
+                    for (let i = 0; i < o.length; i++) o[i].title = e.name;
 
-                    })), ti.on("success", function (e) {
-                        const thread = document.querySelector('.main.active');
-                        const threadClasses = thread.className;
-                        const messageTextarea = thread.querySelector('.chat_message');
-                        messageTextarea.value = "";
-                        isUploadFileAction = false;
-                        isReplying = false;
+                })), ti.on("success", function (e) {
+                    const thread = document.querySelector('.main.active');
+                    const threadClasses = thread.className;
+                    const messageTextarea = thread.querySelector('.chat_message');
+                    messageTextarea.value = "";
+                    isUploadFileAction = false;
+                    isReplying = false;
 
-                        if (replyRemove) {
-                            replyRemove.remove();
+                    if (replyRemove) {
+                        replyRemove.remove();
+                    }
+
+                    if (thread.classList.contains('conversation-thread')) {
+                        var sendBtn = thread.querySelector('.direct-upload-file');
+                        if (sendBtn) {
+                            sendBtn.classList.add('direct-send-btn');
+                            sendBtn.classList.remove('direct-upload-file');
+                        }
+                    } else if (thread.classList.contains('group-conversation-thread')) {
+                        var sendBtn = thread.querySelector('.group-upload-file');
+                        if (sendBtn) {
+                            sendBtn.classList.add('group-send-btn');
+                            sendBtn.classList.remove('group-upload-file');
+                        }
+                    }
+
+                    ti.removeAllFiles();
+
+
+                }), ti.on("addedfiles", (function (e) {
+                    isUploadFileAction = true;
+                    const thread = document.querySelector('.main.active');
+                    ti.previewsContainer.classList.add("dz-preview-moved", "pb-10", "pt-3", "px-2")
+
+                    if (thread.classList.contains('conversation-thread')) {
+                        var sendBtn = thread.querySelector('.direct-send-btn');
+                        if (sendBtn) {
+                            sendBtn.classList.add('direct-upload-file');
+                            sendBtn.classList.remove('direct-send-btn');
                         }
 
-                        if (thread.classList.contains('conversation-thread')) {
-                            var sendBtn = thread.querySelector('.direct-upload-file');
-                            if (sendBtn) {
-                                sendBtn.classList.add('direct-send-btn');
-                                sendBtn.classList.remove('direct-upload-file');
-                            }
-                        } else if (thread.classList.contains('group-conversation-thread')) {
-                            var sendBtn = thread.querySelector('.group-upload-file');
-                            if (sendBtn) {
-                                sendBtn.classList.add('group-send-btn');
-                                sendBtn.classList.remove('group-upload-file');
-                            }
+                        thread.querySelector('.direct-upload-file').addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            ti.processQueue();
+                        });
+
+                    } else if (thread.classList.contains('group-conversation-thread')) {
+                        var sendBtn = thread.querySelector('.group-send-btn');
+                        if (sendBtn) {
+                            sendBtn.classList.add('group-upload-file');
+                            sendBtn.classList.remove('group-send-btn');
                         }
 
+                        thread.querySelector('.group-upload-file').addEventListener('click', function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            ti.processQueue();
+                        });
+                    }
+
+                    while (ti.files.length > ti.options.maxFiles) {
                         ti.removeAllFiles();
-
-
-                    }), ti.on("addedfiles", (function (e) {
-                        isUploadFileAction = true;
-                        const thread = document.querySelector('.main.active');
-                        ti.previewsContainer.classList.add("dz-preview-moved", "pb-10", "pt-3", "px-2")
-
-                        if (thread.classList.contains('conversation-thread')) {
-                            var sendBtn = thread.querySelector('.direct-send-btn');
-                            if (sendBtn) {
-                                sendBtn.classList.add('direct-upload-file');
-                                sendBtn.classList.remove('direct-send-btn');
-                            }
-
-                            thread.querySelector('.direct-upload-file').addEventListener('click', function (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                ti.processQueue();
-                            });
-
-                        } else if (thread.classList.contains('group-conversation-thread')) {
-                            var sendBtn = thread.querySelector('.group-send-btn');
-                            if (sendBtn) {
-                                sendBtn.classList.add('group-upload-file');
-                                sendBtn.classList.remove('group-send-btn');
-                            }
-
-                            thread.querySelector('.group-upload-file').addEventListener('click', function (e) {
-                                e.preventDefault();
-                                e.stopPropagation();
-
-                                ti.processQueue();
-                            });
+                        alert(`You can upload only up to ${ti.options.maxFiles} files!`)
+                    }
+                    e.forEach(function (file) {
+                        if (file.size / 1024 / 1024 > ti.options.maxFilesize) {
+                            alert(`The file "${file.name}" size exceeds the limit of ${ti.options.maxFilesize}MB!`);
+                            ti.removeFile(file);
                         }
+                    });
 
-                        while (ti.files.length > ti.options.maxFiles) {
-                            ti.removeAllFiles();
-                            alert(`You can upload only up to ${ti.options.maxFiles} files!`)
+                })), ti.on("reset", (function (e) {
+                    ti.previewsContainer.classList.remove("dz-preview-moved", "pb-10", "pt-3", "px-2")
+                    isUploadFileAction = false;
+                    const thread = document.querySelector('.main.active');
+
+                    if (replyRemove) {
+                        replyRemove.remove();
+                    }
+
+                    if (thread.classList.contains('conversation-thread')) {
+                        var sendBtn = thread.querySelector('.direct-upload-file');
+                        if (sendBtn) {
+                            sendBtn.classList.add('direct-send-btn');
+                            sendBtn.classList.remove('direct-upload-btn');
                         }
-                        if (e.size > ti.options.maxFilesize * 1024 * 1024) {
-                            ti.removeAllFiles();
-                            alert(`File size exceeds the limit of ${ti.options.maxFilesize}MB!`);
+                    } else if (thread.classList.contains('group-conversation-thread')) {
+                        var sendBtn = thread.querySelector('.group-upload-file');
+                        if (sendBtn) {
+                            sendBtn.classList.add('group-send-btn');
+                            sendBtn.classList.remove('group-upload-file');
                         }
+                    }
 
-                    })), ti.on("reset", (function (e) {
-                        ti.previewsContainer.classList.remove("dz-preview-moved", "pb-10", "pt-3", "px-2")
-                        isUploadFileAction = false;
-                        const thread = document.querySelector('.main.active');
-
-                        if (replyRemove) {
-                            replyRemove.remove();
-                        }
-
-                        if (thread.classList.contains('conversation-thread')) {
-                            var sendBtn = thread.querySelector('.direct-upload-file');
-                            if (sendBtn) {
-                                sendBtn.classList.add('direct-send-btn');
-                                sendBtn.classList.remove('direct-upload-btn');
-                            }
-                        } else if (thread.classList.contains('group-conversation-thread')) {
-                            var sendBtn = thread.querySelector('.group-upload-file');
-                            if (sendBtn) {
-                                sendBtn.classList.add('group-send-btn');
-                                sendBtn.classList.remove('group-upload-file');
-                            }
-                        }
-
-                        isReplying = false;
+                    isReplying = false;
 
 
 
-                    }))
+                }))
             });
             i(547), window.onload = function () {
                 var e;

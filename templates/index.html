@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load sizefy %}
+{% load mute_filter %}
+
 {% block css %}
     .reverse-rounded-pill {
         border-bottom-left-radius: 1.2rem;
@@ -672,7 +674,11 @@
                                                                             {% if group_message.reply %}
                                                                                 <blockquote class="blockquote overflow-hidden">
                                                                                     <h6 class="text-reset text-truncate">Reply to</h6>
+                                                                                    {% if group_message.reply.content %}
+                                                                                    <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                                    {% else %}
                                                                                     <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% endif %}
                                                                                 </blockquote>
                                                                             {% endif %}
                                                                             <div class="row gx-3">
@@ -719,7 +725,11 @@
                                                                             {% if group_message.reply %}
                                                                                 <blockquote class="blockquote overflow-hidden">
                                                                                     <h6 class="text-reset text-truncate">Reply to</h6>
-                                                                                    <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% if group_message.reply.content %}
+                                                                                        <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                                    {% else %}
+                                                                                        <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% endif %}
                                                                                 </blockquote>
                                                                             {% endif %}
                                                                             <div class="row align-items-center gx-4">
@@ -733,7 +743,7 @@
                                                                                 <div class="col overflow-hidden">
                                                                                     <h6 class="text-truncate text-reset">
                                                                                         <a href="{{ file.file_path.url }}" class="text-reset">{{ file.name }}</a>
-                                                                                        <input type="hidden" class="file-{{ group_message.id }}" value="{{ file.name }}">
+                                                                                         <input type="hidden" class="file-{{ group_message.id }}" value="{{ file.name }}">
                                                                                     </h6>
                                                                                     <ul class="list-inline text-uppercase extra-small opacity-75 mb-0">
                                                                                         <li class="list-inline-item">{{ file.file_path.size|sizefy }}</li>
@@ -781,18 +791,16 @@
                                                             <div class="message-content">
                                                                 <div class="message-text">
                                                                     {% if group_message.reply %}
-                                                                    <blockquote class="blockquote overflow-hidden">
-                                                                        <h6 class="text-reset text-truncate">Reply to</h6>
-                                                                        
-                                                                        {% if group_message.reply.content %}
-                                                                            <p class="small text-truncate">{{ group_message.reply.content }}</p>
-                                                                        {% else %}
-                                                                            <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
-                                                                        {% endif %}
-
-                                                                    </blockquote>
+                                                                        <blockquote class="blockquote overflow-hidden">
+                                                                            <h6 class="text-reset text-truncate">Reply to</h6>
+                                                                            {% if group_message.reply.content %}
+                                                                                <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                            {% else %}
+                                                                                <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                            {% endif %}
+                                                                        </blockquote>
                                                                     {% endif %}
-                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">{{ user_message.content }}</p></pre>
+                                                                    <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">{{ group_message.content }}</pre>
                                                                 </div>
 
                                                                 <!-- Dropdown -->
@@ -856,16 +864,21 @@
                                                             {% for file in group_message.file_message.all %}
                                                                 {% if file.image_path %}
                                                                     <div class="message-content">
-                                                                        {% if user_message.reply %}
-                                                                            <blockquote class="blockquote overflow-hidden">
-                                                                                <h6 class="text-reset text-truncate">Reply to</h6>
-                                                                                <p class="small text-truncate">{% for file in user_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
-                                                                            </blockquote>
-                                                                        {% endif %}
                                                                         <div class="message-gallery">
+                                                                            {% if group_message.reply %}
+                                                                                <blockquote class="blockquote overflow-hidden">
+                                                                                    <h6 class="text-reset text-truncate">Reply to</h6>
+                                                                                    {% if group_message.reply.content %}
+                                                                                        <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                                    {% else %}
+                                                                                        <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% endif %}
+                                                                                </blockquote>
+                                                                            {% endif %}
                                                                             <div class="row gx-3">
                                                                                 <div class="col">
                                                                                     <img class="img-fluid rounded" src="{{ file.image_path.url }}" data-action="zoom" alt="">
+                                                                                    <input type="hidden" class="image-{{ group_message.id }}" value="{{ file.name }}">
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -903,10 +916,14 @@
                                                                 {% elif file.file_path %}
                                                                     <div class="message-content">
                                                                         <div class="message-text">
-                                                                            {% if user_message.reply %}
+                                                                            {% if group_message.reply %}
                                                                                 <blockquote class="blockquote overflow-hidden">
                                                                                     <h6 class="text-reset text-truncate">Reply to</h6>
-                                                                                    <p class="small text-truncate">{% for file in user_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% if group_message.reply.content %}
+                                                                                        <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                                    {% else %}
+                                                                                        <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                                    {% endif %}
                                                                                 </blockquote>
                                                                             {% endif %}
                                                                             <div class="row align-items-center gx-4">
@@ -920,6 +937,7 @@
                                                                                 <div class="col overflow-hidden">
                                                                                     <h6 class="text-truncate text-reset">
                                                                                         <a href="{{ file.file_path.url }}" class="text-reset">{{ file.name }}</a>
+                                                                                         <input type="hidden" class="file-{{ group_message.id }}" value="{{ file.name }}">
                                                                                     </h6>
                                                                                     <ul class="list-inline text-uppercase extra-small opacity-75 mb-0">
                                                                                         <li class="list-inline-item">{{ file.file_path.size|sizefy }}</li>
@@ -967,12 +985,16 @@
                                                             <div class="message-content">
                                                                 <div class="message-text">
                                                                     {% if group_message.reply %}
-                                                                    <blockquote class="blockquote overflow-hidden">
-                                                                        <h6 class="text-reset text-truncate">Reply to</h6>
-                                                                        <p class="small text-truncate">{{ group_message.reply.content }}</p>
-                                                                    </blockquote>
+                                                                        <blockquote class="blockquote overflow-hidden">
+                                                                            <h6 class="text-reset text-truncate">Reply to</h6>
+                                                                            {% if group_message.reply.content %}
+                                                                                <p class="small text-truncate">{{ group_message.reply.content }}</p>
+                                                                            {% else %}
+                                                                                <p class="small text-truncate">{% for file in group_message.reply.file_message.all %}{{ file.name }}{% endfor %}</p>
+                                                                            {% endif %}
+                                                                        </blockquote>
                                                                     {% endif %}
-                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">{{ user_message.content }}</p></pre>
+                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;" class="group-message-content">{{ group_message.content }}</pre>
                                                                 </div>
 
                                                                 <!-- Dropdown -->
@@ -1012,48 +1034,55 @@
                 <!-- Chat: Content -->
 
                 <!-- Chat: Footer -->
-                <div class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0">
-                    <!-- Chat: Files -->
-                    <div class="dz-preview bg-dark" id="dz-preview-row" data-horizontal-scroll="">
-                    </div>
-                    <!-- Chat: Files -->
-    
-                    <!-- Chat: Form -->
-                    <div class="chat-form reverse-rounded-pill bg-dark" data-sender-id="{{ request.user.id }}" data-emoji-form="">
+                {% if group|is_muted:request.user.profile %}
+                    <div class="chat-form bg-dark" style="padding: 1rem;">
                         <div class="chat-form-hr"></div>
-                        <div class="row align-items-center gx-0">
-                            <div class="col-auto">
-                                <a href="#" class="btn btn-icon btn-link text-body rounded-circle" id="dz-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-paperclip"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                                </a>
-                                <form method="POST" id="group-upload-form" enctype="multipart/form-data">
-                                    {% csrf_token %}
-                                    <input type="hidden" class="group_id" value="{{ group.id }}">
-                                    <input multiple=True type="file" class="up-hidden-input" tabindex="-1" style="visibility: hidden; position: absolute; top: 0px; left: 0px; height: 0px; width: 0px;">
-                                </form>
-                            </div>
-    
-                            <div class="col">
-                                <div class="input-group">
-                                    <textarea class="form-control px-0 chat_message" placeholder="Type your message..." rows="1" data-emoji-input="" data-autosize="true"></textarea>
-    
-                                    <a href="#" class="input-group-text text-body pe-0" data-emoji-btn="">
-                                        <span class="icon icon-lg">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
-                                        </span>
+                        <p>You have been muted. You cannot send messages until you are unmuted.</p>
+                    </div>
+                {% else %}
+                    <div class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0">
+                        <!-- Chat: Files -->
+                        <div class="dz-preview bg-dark" id="dz-preview-row" data-horizontal-scroll="">
+                        </div>
+                        <!-- Chat: Files -->
+
+                        <!-- Chat: Form -->
+                        <div class="chat-form reverse-rounded-pill bg-dark" data-sender-id="{{ request.user.id }}" data-emoji-form="">
+                            <div class="chat-form-hr"></div>
+                            <div class="row align-items-center gx-0">
+                                <div class="col-auto">
+                                    <a href="#" class="btn btn-icon btn-link text-body rounded-circle" id="dz-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-paperclip"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                                     </a>
+                                    <form method="POST" id="group-upload-form" enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <input type="hidden" class="group_id" value="{{ group.id }}">
+                                        <input multiple=True type="file" class="up-hidden-input" tabindex="-1" style="visibility: hidden; position: absolute; top: 0px; left: 0px; height: 0px; width: 0px;">
+                                    </form>
+                                </div>
+
+                                <div class="col">
+                                    <div class="input-group">
+                                        <textarea class="form-control px-0 chat_message" placeholder="Type your message..." rows="1" data-emoji-input="" data-autosize="true"></textarea>
+
+                                        <a href="#" class="input-group-text text-body pe-0" data-emoji-btn="">
+                                            <span class="icon icon-lg">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-smile"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                                            </span>
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="col-auto">
+                                    <button class="btn btn-icon btn-primary rounded-circle ms-5 group-send-btn">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    </button>
                                 </div>
                             </div>
-    
-                            <div class="col-auto">
-                                <button class="btn btn-icon btn-primary rounded-circle ms-5 group-send-btn">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                                </button>
-                            </div>
                         </div>
+                        <!-- Chat: Form -->
                     </div>
-                    <!-- Chat: Form -->
-                </div>
+                {% endif %}
                 <!-- Chat: Footer -->
             </div>
 
@@ -1180,7 +1209,7 @@
 
                                         <!-- Text -->
                                         <div class="col">
-                                            <h5><a href="#">{{ member.username|title }}</a></h5>
+                                            <h5><a href="#">{{ member.username|title }} {% if group|is_muted:member.profile %} (Muted) {% endif %}</a></h5>
                                         </div>
                                         <!-- Text -->
 
@@ -1204,7 +1233,7 @@
 
                                         <!-- Text -->
                                         <div class="col">
-                                            <h5><a href="#">{{ member.username|title }}</a></h5>
+                                            <h5><a href="#">{{ member.username|title }} {% if group|is_muted:member.profile %} (Muted) {% endif %}</a></h5>
                                         </div>
                                         <!-- Text -->
 
@@ -1212,32 +1241,34 @@
                                         <!-- Owner -->
 
                                         <!-- Dropdown -->
-                                        <div class="col-auto">
-                                            <div class="dropdown">
-                                                <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                                </a>
-
-                                                <ul class="dropdown-menu">
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center kick-member" data-member-id="{{ member.id }}" href="#">
-                                                            Kick
-                                                            <div class="icon ms-auto">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item d-flex align-items-center mute-member" data-member-id="{{ member.id }}" href="#">
-                                                            Mute
-                                                            <div class="icon ms-auto">
-                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-down"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
-                                                            </div>
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                        {% if request.user == group.owner.user %}
+                                            <div class="col-auto">
+                                                <div class="dropdown">
+                                                    <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                                    </a>
+                                                        <ul class="dropdown-menu">
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center kick-member" data-member-id="{{ member.id }}" href="#">
+                                                                    Kick
+                                                                    <div class="icon ms-auto">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+                                                            <li>
+                                                                <a class="dropdown-item d-flex align-items-center mute-member" data-member-id="{{ member.id }}" href="#">
+                                                                    {% if group|is_muted:member.profile %} Unmute {% else %}Mute{% endif %}
+                                                                    <div class="icon ms-auto">
+                                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-down"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 18 23 18 23 12"></polyline></svg>
+                                                                    </div>
+                                                                </a>
+                                                            </li>
+                                                        </ul>
+                                                </div>
                                             </div>
-                                        </div>
+                                        {% endif %}
+
                                         <!-- Dropdown -->
                                     </div>
                                 </li>
@@ -1461,6 +1492,7 @@
 
 {% endfor %}
 
+
 {% for thread in threads %}
     <div class="main conversation-thread d-none" data-dropzone-area="" data-sender-id="{{ request.user.id }}" data-thread-id="{{ thread.id }}" data-receiver-id="{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" id="conversation-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}">
         <div class="container h-100">
@@ -1511,7 +1543,7 @@
                                                     <img class="avatar-img" src="{{ thread.user1.avatar.url }}" alt="#">
                                                 </a>
 
-                                                <a href="#" class="avatar avatar-sm" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{{ thread.user2.id }}">
+                                                <a href="#" class="avatar avatar-sm" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}">
                                                     <img class="avatar-img" src="{{ thread.user2.avatar.url }}" alt="#">
                                                 </a>
                                             </div>
@@ -1540,7 +1572,7 @@
                                 <div class="col-xl-6 d-none d-xl-block">
                                     <div class="row align-items-center justify-content-end gx-6">
                                         <div class="col-auto">
-                                            <a href="#" class="icon icon-lg text-muted" data-offcanvas="info">
+                                            <a href="#" class="icon icon-lg text-muted" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-more-{{ thread.id }}" aria-controls="offcanvas-more">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-horizontal"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                                             </a>
                                         </div>
@@ -1551,7 +1583,7 @@
                                                     <img class="avatar-img" src="{{ thread.user2.avatar.url }}" alt="#">
                                                 </a>
 
-                                                <a href="#" class="avatar avatar-sm" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{{ thread.user2.id }}">
+                                                <a href="#" class="avatar avatar-sm" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}">
                                                     <img class="avatar-img" src="{{ thread.user1.avatar.url }}" alt="#">
                                                 </a>
                                             </div>
@@ -1566,7 +1598,7 @@
 
                         <!-- Mobile: more -->
                         <div class="col-2 d-xl-none text-end">
-                            <a href="#" class="icon icon-lg text-muted" data-offcanvas="info">
+                            <a href="#" class="icon icon-lg text-muted" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-more-{{ thread.id }}" aria-controls="offcanvas-more">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
                             </a>
                         </div>
@@ -1640,7 +1672,8 @@
                                                                             </div>
                                                                         </div>
                                                                     </div>
-                                                                {% elif file.file_path %}
+                                                                {% endif %}
+                                                                {% if file.file_path %}
                                                                     <div class="message-content">
                                                                         <div class="message-text">
                                                                             {% if user_message.reply %}
@@ -1678,6 +1711,24 @@
                                                                                 </a>
 
                                                                                 <ul class="dropdown-menu">
+                                                                                    {% if user_message.content %}
+                                                                                    <li>
+                                                                                        <a class="dropdown-item d-flex align-items-center direct-edit-btn" href="#">
+                                                                                            <span class="me-auto">Edit</span>
+                                                                                            <div class="icon">
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                                                                                            </div>
+                                                                                        </a>
+                                                                                    </li>
+                                                                                    {% endif %}
+                                                                                    <li>
+                                                                                        <a class="dropdown-item d-flex align-items-center direct-reply-btn" href="#">
+                                                                                            <span class="me-auto">Reply</span>
+                                                                                            <div class="icon">
+                                                                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-corner-up-left"><polyline points="9 14 4 9 9 4"></polyline><path d="M20 20v-7a4 4 0 0 0-4-4H4"></path></svg>
+                                                                                            </div>
+                                                                                        </a>
+                                                                                    </li>
                                                                                     <li>
                                                                                         <hr class="dropdown-divider">
                                                                                     </li>
@@ -1705,7 +1756,7 @@
                                                                         <p class="small text-truncate">{{ user_message.reply.content }}</p>
                                                                     </blockquote>
                                                                     {% endif %}
-                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">{{ user_message.content }}</p></pre>
+                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;" class="direct-message-content">{{ user_message.content }}</pre>
                                                                 </div>
 
                                                                 <!-- Dropdown -->
@@ -1759,7 +1810,7 @@
                                             </div>
                                         {% else %}
                                             <div class="message" data-message-id="{{ user_message.id }}">
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{{ thread.user2.id }}" class="avatar avatar-responsive">
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#modal-user-profile-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" class="avatar avatar-responsive">
                                                     <img class="avatar-img" src="{{ user_message.sender.avatar.url }}" alt="">
                                                 </a>
 
@@ -1779,6 +1830,7 @@
                                                                             <div class="row gx-3">
                                                                                 <div class="col">
                                                                                     <img class="img-fluid rounded" src="{{ file.image_path.url }}" data-action="zoom" alt="">
+                                                                                    <input type="hidden" class="image-{{ user_message.id }}" value="{{ file.name }}">
                                                                                 </div>
                                                                             </div>
                                                                         </div>
@@ -1833,6 +1885,7 @@
                                                                                 <div class="col overflow-hidden">
                                                                                     <h6 class="text-truncate text-reset">
                                                                                         <a href="{{ file.file_path.url }}" class="text-reset">{{ file.name }}</a>
+                                                                                        <input type="hidden" class="file-{{ user_message.id }}" value="{{ file.name }}">
                                                                                     </h6>
                                                                                     <ul class="list-inline text-uppercase extra-small opacity-75 mb-0">
                                                                                         <li class="list-inline-item">{{ file.file_path.size|sizefy }}</li>
@@ -1885,7 +1938,7 @@
                                                                         <p class="small text-truncate">{{ user_message.reply.content }}</p>
                                                                     </blockquote>
                                                                     {% endif %}
-                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">{{ user_message.content }}</p></pre>
+                                                                    <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;" class="direct-message-content">{{ user_message.content }}</pre>
                                                                 </div>
 
                                                                 <!-- Dropdown -->
@@ -1983,7 +2036,7 @@
     </div>
 
     <!-- User profile -->
-    <div class="modal fade" id="modal-user-profile-{{ thread.user2.id }}" tabindex="-1" aria-labelledby="modal-user-profile-{{ thread.user2.id }}" aria-hidden="true">
+    <div class="modal fade" id="modal-user-profile-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" id="conversation-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" tabindex="-1" aria-labelledby="modal-user-profile-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" id="conversation-{% if thread.user1 == request.user.profile %}{{ thread.user2.id }}{% else %}{{ thread.user1.id }}{% endif %}" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-fullscreen-xl-down">
             <div class="modal-content">
 
@@ -1999,67 +2052,124 @@
 
                         <div class="profile-body">
                             <div class="avatar avatar-xl">
-                                <img class="avatar-img" src="{{ thread.user2.avatar.url }}" alt="#">
+                                <img class="avatar-img" src="{% if thread.user1 == request.user.profile %}{{ thread.user2.avatar.url }}{% else %}{{ thread.user1.avatar.url }}{% endif %}" alt="#">
 
                                 <a href="#" class="badge badge-lg badge-circle bg-primary text-white border-outline position-absolute bottom-0 end-0">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                                 </a>
                             </div>
 
-                            <h4 class="mb-1">{{ thread.user2.user.username }}</h4>
+                            <h4 class="mb-1">{% if thread.user1 == request.user.profile %}{{ thread.user2.user.username|title }}{% else %}{{ thread.user1.user.username|title }}{% endif %}</h4>
                         </div>
                     </div>
 
                     <hr class="hr-bold modal-gx-n my-0">
 
                     <ul class="list-group list-group-flush">
-                        {% if thread.user2.country %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>Location</h5>
-                                    <p>{{ thread.user2.country }}</p>
-                                </div>
+                        {% if thread.user1 == request.user.profile %}
+                            {% if thread.user2.country %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>Location</h5>
+                                            <p>{{ thread.user2.country }}</p>
+                                        </div>
 
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </li>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            {% if thread.user1.country %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>Location</h5>
+                                            <p>{{ thread.user1.country }}</p>
+                                        </div>
+
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
                         {% endif %}
-                        {% if thread.user2 %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>E-mail</h5>
-                                    <p>{{ thread.user2 }}</p>
-                                </div>
-
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                        {% if thread.user1 == request.user.profile %}
+                            {% if thread.user2.user.email %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>E-mail</h5>
+                                            <p>{{ thread.user2.user.email }}</p>
+                                        </div>
+        
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </li>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            {% if thread.user1.user.email %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>E-mail</h5>
+                                            <p>{{ thread.user1.user.email }}</p>
+                                        </div>
+
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
                         {% endif %}
-                        {% if thread.user2.phone %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>Phone</h5>
-                                    <p>+{{ thread.user2.phone }}</p>
-                                </div>
+                        {% if thread.user1 == request.user.profile %}
+                            {% if thread.user2.phone %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>Phone</h5>
+                                            <p>+{{ thread.user2.phone }}</p>
+                                        </div>
 
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                        </li>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            {% if thread.user1.phone %}
+                                <li class="list-group-item">
+                                    <div class="row align-items-center gx-6">
+                                        <div class="col">
+                                            <h5>Phone</h5>
+                                            <p>+{{ thread.user1.phone }}</p>
+                                        </div>
+
+                                        <div class="col-auto">
+                                            <div class="btn btn-sm btn-icon btn-dark">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endif %}
                         {% endif %}
                     </ul>
 
@@ -2087,7 +2197,7 @@
             </a>
 
             <div class="visibility-xl-invisible overflow-hidden text-center">
-                <h5 class="text-truncate">{{ thread.user2.user.username }}</h5>
+                <h5 class="text-truncate">{% if thread.user1 == request.user.profile %}{{ thread.user2.user.username }}{% else %}{{ thread.user2.user.username }}{% endif %}</h5>
             </div>
 
             <!-- Dropdown -->
@@ -2117,7 +2227,7 @@
                 <div class="row gy-6">
                     <div class="col-12">
                         <div class="avatar avatar-xl mx-auto">
-                            <img src="{{ thread.user2.avatar.url }}" alt="#" class="avatar-img">
+                            <img src="{% if thread.user1 == request.user.profile %}{{ thread.user2.avatar.url }}{% else %}{{ thread.user1.avatar.url }}{% endif %}" alt="#" class="avatar-img">
 
                             <a href="#" class="badge badge-lg badge-circle bg-primary text-white border-outline position-absolute bottom-0 end-0">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-plus"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -2126,7 +2236,7 @@
                     </div>
 
                     <div class="col-12">
-                        <h4>{{ thread.user2.user.username }}</h4>
+                        <h4>{% if thread.user1 == request.user.profile %}{{ thread.user2.user.username }}{% else %}{{ thread.user1.user.username }}{% endif %}</h4>
                     </div>
                 </div>
             </div>
@@ -2160,54 +2270,111 @@
                 <div class="tab-pane fade show active" id="offcanvas-tab-profile" role="tabpanel">
 
                     <ul class="list-group list-group-flush">
+                        {% if thread.user1 == request.user.profile %}
                         {% if thread.user2.country %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>Location</h5>
-                                    <p>{{ thread.user2.country }}</p>
-                                </div>
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>Location</h5>
+                                        <p>{{ thread.user2.country }}</p>
+                                    </div>
 
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </li>
+                            </li>
                         {% endif %}
-                        {% if thread.user2 %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>E-mail</h5>
-                                    <p>{{ thread.user2 }}</p>
-                                </div>
+                    {% else %}
+                        {% if thread.user1.country %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>Location</h5>
+                                        <p>{{ thread.user1.country }}</p>
+                                    </div>
 
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-globe"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </li>
+                            </li>
                         {% endif %}
+                    {% endif %}
+                    {% if thread.user1 == request.user.profile %}
+                        {% if thread.user2.user.email %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>E-mail</h5>
+                                        <p>{{ thread.user2.user.email }}</p>
+                                    </div>
+    
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        {% if thread.user1.user.email %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>E-mail</h5>
+                                        <p>{{ thread.user1.user.email }}</p>
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-mail"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                    {% if thread.user1 == request.user.profile %}
                         {% if thread.user2.phone %}
-                        <li class="list-group-item">
-                            <div class="row align-items-center gx-6">
-                                <div class="col">
-                                    <h5>Phone</h5>
-                                    <p>+{{ thread.user2.phone }}</p>
-                                </div>
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>Phone</h5>
+                                        <p>+{{ thread.user2.phone }}</p>
+                                    </div>
 
-                                <div class="col-auto">
-                                    <div class="btn btn-sm btn-icon btn-dark">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </li>
+                            </li>
                         {% endif %}
+                    {% else %}
+                        {% if thread.user1.phone %}
+                            <li class="list-group-item">
+                                <div class="row align-items-center gx-6">
+                                    <div class="col">
+                                        <h5>Phone</h5>
+                                        <p>+{{ thread.user1.phone }}</p>
+                                    </div>
+
+                                    <div class="col-auto">
+                                        <div class="btn btn-sm btn-icon btn-dark">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-phone-call"><path d="M15.05 5A5 5 0 0 1 19 8.95M15.05 1A9 9 0 0 1 23 8.94m-1 7.98v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endif %}
+                    {% endif %}
                     </ul>
 
                     <ul class="list-group list-group-flush border-top mt-8">
@@ -2311,58 +2478,63 @@
 
     {% for user_message in thread.messages.all %}
         {% for image in user_message.file_message.all %}
-            <div class="modal fade" id="modal-media-preview-{{ image.id }}" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-xl-down">
-                    <div class="modal-content">
+            {% if image.image_path %}
+                <div class="modal fade" id="modal-media-preview-{{ image.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-xl modal-dialog-centered modal-fullscreen-xl-down">
+                        <div class="modal-content">
 
-                        <!-- Modal: Header -->
-                        <div class="modal-header">
-                            <button type="button" class="btn-close btn-close-arrow" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <!-- Modal: Header -->
+                            <div class="modal-header">
+                                <button type="button" class="btn-close btn-close-arrow" data-bs-dismiss="modal" aria-label="Close"></button>
 
-                            <div>
-                                <!-- Dropdown -->
-                                <div class="dropdown">
-                                    <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-                                    </a>
+                                <div>
+                                    <!-- Dropdown -->
+                                    <div class="dropdown">
+                                        <a class="icon text-muted" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-more-vertical"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                        </a>
 
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="dropdown-item d-flex align-items-center" href="{{ image.image_path.url }}">
-                                                Download
-                                                <div class="icon ms-auto">
-                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download-cloud"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path></svg>
-                                                </div>
-                                            </a>
-                                        </li>
-                                    </ul>
+                                        <ul class="dropdown-menu">
+                                            <li>
+                                                <a class="dropdown-item d-flex align-items-center" href="{{ image.image_path.url }}">
+                                                    Download
+                                                    <div class="icon ms-auto">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-download-cloud"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line><path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"></path></svg>
+                                                    </div>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <!-- Dropdown -->
                                 </div>
-                                <!-- Dropdown -->
                             </div>
-                        </div>
-                        <!-- Modal: Header -->
+                            <!-- Modal: Header -->
 
-                        <!-- Modal: Body -->
-                        <div  class="modal-body p-0">
-                            <div class="d-flex align-items-center justify-content-center h-100">
-                                <img class="img-fluid modal-preview-url" src="{{ image.image_path.url }}" alt="#">
+                            <!-- Modal: Body -->
+                            <div  class="modal-body p-0">
+                                <div class="d-flex align-items-center justify-content-center h-100">
+                                    <img class="img-fluid modal-preview-url" src="{{ image.image_path.url }}" alt="#">
 
+                                </div>
                             </div>
-                        </div>
-                        <!-- Modal: Body -->
+                            <!-- Modal: Body -->
 
-                        <!-- Modal: Footer -->
-                        <div class="modal-footer">
-                            <div class="w-100 text-center">
-                                <h6><a href="#">{{ user_message.sender|title }}</a></h6>
-                                <p class="small">Today at {{ user_message.timestamp|date:"h:i A"  }}</p>
+                            <!-- Modal: Footer -->
+                            <div class="modal-footer">
+                                <div class="w-100 text-center">
+                                    <h6><a href="#">{{ user_message.sender|title }}</a></h6>
+                                    <p class="small">Today at {{ user_message.timestamp|date:"h:i A"  }}</p>
+                                </div>
                             </div>
+                            <!-- Modal: Footer -->
                         </div>
-                        <!-- Modal: Footer -->
                     </div>
                 </div>
-            </div>
+            {% endif %}
         {% endfor %}
     {% endfor %}
 {% endfor %}
+
+
+
 {% endblock content %}

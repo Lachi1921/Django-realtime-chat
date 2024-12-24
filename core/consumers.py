@@ -17,7 +17,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        
 
     async def disconnect(self, close_code):
         print(f"Closing group with {close_code}")
@@ -69,6 +68,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         receiver_profile = await sync_to_async(Profile.objects.get)(user__id=receiver_id)
         message_thread = await sync_to_async(Thread.objects.get)(Q(user1=sender_profile, user2=receiver_profile) | Q(user1=receiver_profile, user2=sender_profile))
         message_reply = await sync_to_async(Message.objects.get)(id=replyTo)
+        if message_reply.content:
+            message_reply_content = message_reply.content
+        else:
+            file_name = await sync_to_async(Files.objects.get)(message_id=replyTo)
+            message_reply_content = file_name.name if file_name else None
 
         message_obj = await sync_to_async(Message.objects.create)(thread=message_thread, sender=sender_profile, reply=message_reply, receiver=receiver_profile, content=message)
 
@@ -77,7 +81,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'send_reply_message',
                 'reply_id': message_reply.id,
-                'reply_message': message_reply.content,
+                'reply_message': message_reply_content,
                 'message_id': message_obj.id,
                 'message': message,
                 'sender_id': sender_id,
@@ -180,7 +184,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def handle_file_upload(self, event):
         sub_action = event['sub_action']
         message_id = event['message_id']
-        message = serialize('json', [event['message']])
+        message = event['message']
+        reply_message = event['reply_message']
         sender_id = event['sender_id']
         sender_avatar = event['sender_avatar']
         timestamp = event['timestamp']
@@ -192,8 +197,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'action': 'handle_file_upload',
             'sub_action': sub_action,
+            'reply_message': reply_message,
             'message_id': message_id,
-            'message': serialize('json', [message]),
+            'message': message,
             'sender_id': sender_id,
             'sender_avatar': sender_avatar,
             'timestamp': timestamp,
@@ -205,6 +211,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def handle_upload_with_message(self, event):
         sub_action = event['sub_action']
+        reply_message = event['reply_message']
         message_id = event['message_id']
         message = event['message']
         sender_id = event['sender_id']
@@ -217,9 +224,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.send(text_data=json.dumps({
             'action': 'handle_upload_with_message',
+            'reply_message': reply_message,
             'sub_action': sub_action,
             'message_id': message_id,
-            'message': serialize('json', [message]),
+            'message': message,
             'sender_id': sender_id,
             'sender_avatar': sender_avatar,
             'timestamp': timestamp,
@@ -233,6 +241,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         return Profile.objects.get(user__id=user_id).avatar.url
     
 class GroupChatConsumer(AsyncWebsocketConsumer):
+    
     async def connect(self):
         self.group_id = self.scope['url_route']['kwargs']['group_id']
         self.group_name = f"group_{self.group_id}"
@@ -253,7 +262,6 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         json_data = json.loads(text_data)
         action = json_data['action']
-        print(text_data)
 
         if action == 'send_message':
             await self.receive_message(json_data)
@@ -310,14 +318,20 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         sender_profile = await sync_to_async(Profile.objects.get)(user__id=sender_id)
         group = await sync_to_async(Group.objects.get)(id=group_id)
         message_reply = await sync_to_async(Message.objects.get)(id=replyTo)
+        if message_reply.content:
+            message_reply_content = message_reply.content
+        else:
+            file_name = await sync_to_async(Files.objects.get)(message_id=replyTo)
+            message_reply_content = file_name.name if file_name else None
+
         message_obj = await sync_to_async(Message.objects.create)(group=group, sender=sender_profile, reply=message_reply, content=message)
         await self.channel_layer.group_send(
             self.group_name,
             {
                 'type': 'send_reply_message',
                 'reply_id': message_reply.id,
-                'reply_message_content': message_reply.content,
                 'message_id': message_obj.id,
+                'reply_message': message_reply_content,
                 'message': message,
                 'sender_id': sender_id,
                 'sender_avatar': await sync_to_async(self.get_avatar)(sender_id),
@@ -390,24 +404,34 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         group_id = json_data['group_id']
         member_id = json_data['member_id']
         group = await sync_to_async(Group.objects.get)(id=group_id)
-        if userprofile == group.owner_id and member_id != userprofile:
-            member_id = json_data['member_id']
-            member = await sync_to_async(User.objects.get)(id=member_id)
+        member_id = json_data['member_id']
+        member = await sync_to_async(User.objects.get)(id=member_id)
+        try:
             await sync_to_async(group.members.remove)(member)
+            print(f"Successfully removed member {member.id} from group {group.id}")
+        except Exception as e:
+            print(f"Error removing member {member.id} from group {group.id}: {e}")
+        
+        try:
             await sync_to_async(group.save)()
-            member_count = await sync_to_async(group.members.all().count)()
-            
-            await self.channel_layer.group_send(
-                self.group_name,
-                {
-                    'type': 'handle_kick_member',
-                    'group_id': group_id,
-                    'member_id': member_id,
-                    'member_count': member_count,
-                }
-            )
+            print(f"Group {group.id} saved successfully after removing member {member.id}")
+        except Exception as e:
+            print(f"Error saving group {group.id} after removing member {member.id}: {e}")
+        member_count = await sync_to_async(group.members.all().count)()
+        
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                'type': 'handle_kick_member',
+                'group_id': group_id,
+                'member_id': member_id,
+                'member_count': member_count,
+            }
+        )
+        if userprofile == group.owner_id and member_id != userprofile:
+            pass
         else:
-            return await self.close(code=4000)
+            self.close(code=4403)
     
     async def mute_member(self, json_data):
         userprofile = self.scope['user'].id
@@ -502,7 +526,7 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         }))
 
     async def send_reply_message(self, event):
-        reply_message = event['reply_message_content']
+        reply_message = event['reply_message']
         message = event['message']
         reply_id = event['reply_id']
         message_id = event['message_id']
@@ -542,7 +566,8 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
     async def handle_file_upload(self, event):
         sub_action = event['sub_action']
         message_id = event['message_id']
-        message = serialize('json', [event['message']])
+        message = event['message']
+        reply_message = event['reply_message']
         sender_id = event['sender_id']
         sender_avatar = event['sender_avatar']
         timestamp = event['timestamp']
@@ -555,7 +580,8 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
             'action': 'handle_file_upload',
             'sub_action': sub_action,
             'message_id': message_id,
-            'message': serialize('json', [message]),
+            'reply_message': reply_message,
+            'message': message,
             'sender_id': sender_id,
             'sender_avatar': sender_avatar,
             'timestamp': timestamp,
@@ -569,6 +595,7 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
         sub_action = event['sub_action']
         message_id = event['message_id']
         message = event['message']
+        reply_message = event['reply_message']
         sender_id = event['sender_id']
         sender_avatar = event['sender_avatar']
         timestamp = event['timestamp']
@@ -581,7 +608,8 @@ class GroupChatConsumer(AsyncWebsocketConsumer):
             'action': 'handle_upload_with_message',
             'sub_action': sub_action,
             'message_id': message_id,
-            'message': serialize('json', [message]),
+            'message': message,
+            'reply_message': reply_message,
             'sender_id': sender_id,
             'sender_avatar': sender_avatar,
             'timestamp': timestamp,

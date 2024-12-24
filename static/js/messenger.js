@@ -13,7 +13,6 @@ document.getElementById("delete-chat-link").addEventListener("click", function(e
     }
 });
 
-
 function toggleConversation(sender_id, receiver_id) {
     const conversationThread = document.getElementById('conversation-' + receiver_id);
     const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
@@ -67,7 +66,7 @@ function toggleConversation(sender_id, receiver_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -120,6 +119,7 @@ function toggleConversation(sender_id, receiver_id) {
                 } else {
                     if (chatEmpty) {
                         chatEmpty.remove();
+                        chatBodyInner.classList.remove('h-100')
                         MessageContainer = document.createElement('div');
                         MessageContainer.classList.add('py-6', 'py-lg-12');
                         MessageContainer.innerHTML += receivedMessage;
@@ -136,7 +136,7 @@ function toggleConversation(sender_id, receiver_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -169,6 +169,7 @@ function toggleConversation(sender_id, receiver_id) {
                 } else {
                     if (chatEmpty) {
                         chatEmpty.remove();
+                        chatBodyInner.classList.remove('h-100')
                         MessageContainer = document.createElement('div');
                         MessageContainer.classList.add('py-6', 'py-lg-12');
                         MessageContainer.innerHTML += receivedMessage;
@@ -192,7 +193,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             <h6 class="text-reset text-truncate">Reply to</h6>
                                             <p class="small text-truncate">${data.reply_message}</p>
                                         </blockquote>
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -254,7 +255,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             <h6 class="text-reset text-truncate">Reply to</h6>
                                             <p class="small text-truncate">${data.reply_message}</p>
                                         </blockquote>
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -313,46 +314,43 @@ function toggleConversation(sender_id, receiver_id) {
             const messageContainer = document.querySelector(`.message[data-message-id="${messageId}"]`);
             messageContainer.remove();
         } else if (data.action === 'handle_file_upload') {
+            console.log(data)
             let MessageContainer = conversationThread.querySelector('.py-6.py-lg-12');
             const chatEmpty = conversationThread.querySelector('.chat-empty');
             const chatBodyInner = conversationThread.querySelector('.chat-body-inner');
             var imagesExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
-            var reply_blockquote;
-            if (imagesExtensions.includes(data.file_extension)) {
-                if (data.sub_action === 'reply_file') {
-                    reply_blockquote = `
+            var reply_blockquote = '';
+            if (data.reply_message) {
+                reply_blockquote = `
                     <blockquote class="blockquote overflow-hidden">
                         <h6 class="text-reset text-truncate">Reply to</h6>
-                        <p class="small text-truncate">${data.files_name}</p>
+                        <p class="small text-truncate">${data.reply_message}</p>
                     </blockquote>`
-                }
-                var fileUrls = data.file_urls;
+            }
+
+            if (imagesExtensions.includes(data.file_extension)) {
                 let message_gallery = document.createElement('div');
                 message_gallery.classList.add('message-gallery');
-                if (isReplying == true) {
-                    message_gallery.innerHTML += reply_blockquote
-                }
+                message_gallery.innerHTML += reply_blockquote
                 let rowDiv = document.createElement('div');
                 rowDiv.classList.add('row', 'gx-3');
                 message_gallery.appendChild(rowDiv);
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col');
+                const img = document.createElement('img');
+                img.classList.add('img-fluid', 'rounded');
+                const inputElement = document.createElement('input');
+                inputElement.type = 'hidden'
+                inputElement.classList.add(`image-${data.message_id}`)
+                inputElement.value = `${data.files_name}`
+                img.setAttribute('data-action', 'zoom');
+                img.src = data.file_urls;
 
-                fileUrls.forEach(url => {
-                    const colDiv = document.createElement('div');
-                    colDiv.classList.add('col');
-                    const img = document.createElement('img');
-                    img.classList.add('img-fluid', 'rounded');
-                    const inputElement = document.createElement('input');
-                    inputElement.type = 'hidden'
-                    inputElement.classList.add(`image-${data.message_id}`)
-                    inputElement.value = `${data.files_name}`
-                    img.setAttribute('data-action', 'zoom');
-                    img.src = url;
+                colDiv.appendChild(img);
+                colDiv.appendChild(inputElement);
 
-                    colDiv.appendChild(img);
-                    colDiv.appendChild(inputElement);
+                rowDiv.appendChild(colDiv);
 
-                    rowDiv.appendChild(colDiv);
-                });
 
 
                 if (parseInt(data.sender_id) === parseInt(sender_id)) {
@@ -372,14 +370,6 @@ function toggleConversation(sender_id, receiver_id) {
                                                     </a>
 
                                                     <ul class="dropdown-menu">
-                                                        <li>
-                                                            <a class="dropdown-item d-flex align-items-center direct-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
                                                         <li>
                                                             <a class="dropdown-item d-flex align-items-center direct-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
@@ -416,6 +406,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -441,14 +432,6 @@ function toggleConversation(sender_id, receiver_id) {
 
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a class="dropdown-item d-flex align-items-center direct-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                        <li>
                                                             <a class="dropdown-item d-flex align-items-center direct-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
                                                                 <div class="icon">
@@ -484,6 +467,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -492,9 +476,7 @@ function toggleConversation(sender_id, receiver_id) {
                     }
                 }
             } else {
-                var fileUrls = data.file_urls;
                 let receivedMessage = null;
-                fileUrls.forEach(url => {
                 if (parseInt(data.sender_id) === parseInt(sender_id)) {
                     receivedMessage = `<div class="message message-out" data-message-id="${data.message_id}">
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-profile" class="avatar avatar-responsive">
@@ -506,7 +488,7 @@ function toggleConversation(sender_id, receiver_id) {
                                     <div class="message-text">
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -514,7 +496,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h6 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h6>
                                                 <ul class="list-inline text-uppercase extra-small opacity-75 mb-0">
@@ -565,6 +547,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -583,7 +566,7 @@ function toggleConversation(sender_id, receiver_id) {
                                     <div class="message-text">
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -591,7 +574,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -640,6 +623,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -647,7 +631,7 @@ function toggleConversation(sender_id, receiver_id) {
                         }
                     }
                 }
-                })
+
 
             }
         } else if (data.action === 'handle_upload_with_message') {
@@ -655,31 +639,38 @@ function toggleConversation(sender_id, receiver_id) {
             const chatEmpty = conversationThread.querySelector('.chat-empty');
             const chatBodyInner = conversationThread.querySelector('.chat-body-inner');
             var imagesExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
+            let reply_blockquote = ''
+            if (data.reply_message) {    
+                reply_blockquote = `
+                    <blockquote class="blockquote overflow-hidden">
+                        <h6 class="text-reset text-truncate">Reply to</h6>
+                        <p class="small text-truncate">${data.reply_message}</p>
+                    </blockquote>`
+            }
             if (imagesExtensions.includes(data.file_extensions)) {
-                var fileUrls = data.file_urls;
                 let message_gallery = document.createElement('div');
                 message_gallery.classList.add('message-gallery');
                 let rowDiv = document.createElement('div');
+                message_gallery.innerHTML += reply_blockquote
                 rowDiv.classList.add('row', 'gx-3');
                 message_gallery.appendChild(rowDiv);
 
-                fileUrls.forEach(url => {
-                    const colDiv = document.createElement('div');
-                    colDiv.classList.add('col');
-                    const img = document.createElement('img');
-                    img.classList.add('img-fluid', 'rounded');
-                    const inputElement = document.createElement('input');
-                    inputElement.type = 'hidden'
-                    inputElement.classList.add(`image-${data.message_id}`)
-                    inputElement.value = `${data.files_name}`
-                    img.setAttribute('data-action', 'zoom');
-                    img.src = url;
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col');
+                const img = document.createElement('img');
+                img.classList.add('img-fluid', 'rounded');
+                const inputElement = document.createElement('input');
+                inputElement.type = 'hidden'
+                inputElement.classList.add(`image-${data.message_id}`)
+                inputElement.value = `${data.files_name}`
+                img.setAttribute('data-action', 'zoom');
+                img.src = data.file_urls;
 
-                    colDiv.appendChild(img);
-                    colDiv.appendChild(inputElement);
+                colDiv.appendChild(img);
+                colDiv.appendChild(inputElement);
 
-                    rowDiv.appendChild(colDiv);
-                });
+                rowDiv.appendChild(colDiv);
+                
 
 
                 if (parseInt(data.sender_id) === parseInt(sender_id)) {
@@ -732,7 +723,7 @@ function toggleConversation(sender_id, receiver_id) {
                                         </div>
                                         <div class="message-content">
                                             <div class="message-text">
-                                                <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                                <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                             </div>
                                             <div class="message-action">
                                                 <div class="dropdown">
@@ -786,6 +777,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -843,7 +835,7 @@ function toggleConversation(sender_id, receiver_id) {
                                         </div>
                                         <div class="message-content">
                                             <div class="message-text">
-                                                <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                                <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                             </div>
                                             <div class="message-action">
                                                 <div class="dropdown">
@@ -896,6 +888,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -904,9 +897,7 @@ function toggleConversation(sender_id, receiver_id) {
                     }
                 }
             } else {
-                var fileUrls = data.file_urls;
                 let receivedMessage = null;
-                fileUrls.forEach(url => {
                 if (parseInt(data.sender_id) === parseInt(sender_id)) {
                     receivedMessage = `<div class="message message-out" data-message-id="${data.message_id}">
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-profile" class="avatar avatar-responsive">
@@ -916,9 +907,10 @@ function toggleConversation(sender_id, receiver_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                        ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -926,7 +918,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -935,7 +927,7 @@ function toggleConversation(sender_id, receiver_id) {
                                 </div>
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -981,6 +973,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -996,9 +989,10 @@ function toggleConversation(sender_id, receiver_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                        ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -1006,7 +1000,7 @@ function toggleConversation(sender_id, receiver_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -1015,7 +1009,7 @@ function toggleConversation(sender_id, receiver_id) {
                                 </div>
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="direct-message-content">${data.message}</p></pre>
+                                        <pre class="direct-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -1061,6 +1055,7 @@ function toggleConversation(sender_id, receiver_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -1068,7 +1063,6 @@ function toggleConversation(sender_id, receiver_id) {
                         }
                     }
                 }
-                })
 
             }
         }
@@ -1082,9 +1076,8 @@ function toggleConversation(sender_id, receiver_id) {
     document.addEventListener('click', function(event) {
         if (event.target.matches('.direct-send-btn')) {
             event.preventDefault();
-            console.log('Triggered')
+            event.stopPropagation();
             if (!isReplying) {
-                console.log('Is not reply')
                 const container = event.target.closest('.chat-form');
                 const messageInput = container.querySelector(".chat_message");
                 const message = messageInput.value;
@@ -1104,30 +1097,38 @@ function toggleConversation(sender_id, receiver_id) {
             event.preventDefault();
             const messageContainer = event.target.closest('.message');
             const messageText = messageContainer.querySelector('.message-text');
-            const messageContent = messageText.querySelector('.direct-message-content');
-            const originalContent = messageContent.textContent;
-            messageContent.remove()
-            const inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.value = originalContent;
-            messageText.appendChild(inputField);
-            inputField.focus();
-            inputField.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    let newContent = inputField.value;
-                    if (newContent === '') {
-                        newContent = originalContent;
+            if (messageText) {
+                const messageContent = messageText.querySelector('.direct-message-content');
+                const originalContent = messageContent.textContent;
+                messageContent.remove();
+                
+                const inputField = document.createElement('textarea');
+                inputField.className = 'form-control';
+                inputField.style.backgroundColor = '#4fa1ff';
+                inputField.style.borderRadius = '.6rem';
+                inputField.style.borderColor = '#2787f5';
+                inputField.style.color = '#fff';
+                inputField.value = originalContent
+                
+                messageText.appendChild(inputField);
+                inputField.focus();
+                inputField.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        let newContent = inputField.value;
+                        if (newContent === '') {
+                            newContent = originalContent;
+                        }
+                        const messageId = messageContainer.dataset.messageId;
+                        chatSocket.send(JSON.stringify({
+                            'action': 'edit_message',
+                            'messageId': messageId,
+                            'newContent': newContent,
+                        }));
+                        inputField.remove();
                     }
-                    const messageId = messageContainer.dataset.messageId;
-                    chatSocket.send(JSON.stringify({
-                        'action': 'edit_message',
-                        'messageId': messageId,
-                        'newContent': newContent,
-                    }));
-                    inputField.remove();
-                }
-            });
+                });
+            }
 
         } else if (event.target.matches('.direct-reply-btn')) {
             event.preventDefault();
@@ -1226,7 +1227,6 @@ function toggleConversation(sender_id, receiver_id) {
                             'replyTo': replyMessageId,
                             'message': message,
                         }));
-                        console.log(replyMessageId)
                         messageInput.value = "";
                         replyRemove.remove();
                         isReplying = false;
@@ -1252,6 +1252,7 @@ function toggleConversation(sender_id, receiver_id) {
         }
     });
 }
+
 
 function toggleGroupConversation(group_id) {
     const conversationThread = document.getElementById('group-conversation-thread-' + group_id);
@@ -1293,6 +1294,7 @@ function toggleGroupConversation(group_id) {
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         const senderId = conversationThread.dataset.senderId;
+        console.log(data)
         if (data.action === 'send_message') {
             let MessageContainer = conversationThread.querySelector('.py-6.py-lg-12');
             let chatEmpty = conversationThread.querySelector('.group-chat-empty');
@@ -1308,7 +1310,7 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -1361,6 +1363,7 @@ function toggleGroupConversation(group_id) {
                 } else {
                     if (chatEmpty) {
                         chatEmpty.remove();
+                        chatBodyInner.classList.remove('h-100')
                         MessageContainer = document.createElement('div');
                         MessageContainer.classList.add('py-6', 'py-lg-12');
                         MessageContainer.innerHTML += receivedMessage;
@@ -1377,7 +1380,7 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -1410,6 +1413,7 @@ function toggleGroupConversation(group_id) {
                 } else {
                     if (chatEmpty) {
                         chatEmpty.remove();
+                        chatBodyInner.classList.remove('h-100')
                         MessageContainer = document.createElement('div');
                         MessageContainer.classList.add('py-6', 'py-lg-12');
                         MessageContainer.innerHTML += receivedMessage;
@@ -1433,7 +1437,7 @@ function toggleGroupConversation(group_id) {
                                             <h6 class="text-reset text-truncate">Reply to</h6>
                                             <p class="small text-truncate">${data.reply_message}</p>
                                         </blockquote>
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -1495,7 +1499,7 @@ function toggleGroupConversation(group_id) {
                                             <h6 class="text-reset text-truncate">Reply to</h6>
                                             <p class="small text-truncate">${data.reply_message}</p>
                                         </blockquote>
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -1529,10 +1533,23 @@ function toggleGroupConversation(group_id) {
             const newContent = data.new_content;
             const messageContainer = conversationThread.querySelector(`.message[data-message-id="${messageId}"]`);
             const messageText = messageContainer.querySelector('.message-text');
-            const messageP = document.createElement('p');
-            messageP.classList.add('group-message-content')
-            messageP.textContent = newContent;
-            messageText.appendChild(messageP);
+            
+            const messageContent = messageText.querySelector('.group-message-content');
+            if (messageContent) {
+                messageContent.remove()
+            }
+            const preElement = document.createElement('pre');
+            if (preElement) {
+                preElement.classList.add('group-message-content')
+                preElement.style.fontFamily = 'var(--bs-body-font-family)';
+                preElement.style.fontSize = '15px';
+                preElement.style.fontWeight = '400';
+                preElement.style.marginBottom = '0px';
+            }
+            
+            preElement.textContent = newContent;
+
+            messageText.appendChild(preElement);
         } else if (data.action === 'deleted_message') {
             const messageId = data.messageId;
             const messageContainer = document.querySelector(`.message[data-message-id="${messageId}"]`);
@@ -1606,8 +1623,7 @@ function toggleGroupConversation(group_id) {
                         <div class="chat-form bg-dark" style="padding: 1rem;">
                             <div class="chat-form-hr"></div>
                             <p>You have been muted. You cannot send messages until you are unmuted.</p>
-                        </div>
-                    `;
+                        </div>`;
                     chat_form.outerHTML = mutedHtml;
                     member.textContent += ' (Muted)';
                     muteButton.textContent = 'Unmute'
@@ -1636,7 +1652,7 @@ function toggleGroupConversation(group_id) {
                                 </div>
 
                                 <div class="col-auto">
-                                    <button class="btn btn-icon btn-primary rounded-circle ms-5 direct-send-btn">
+                                    <button class="btn btn-icon btn-primary rounded-circle ms-5 group-send-btn">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
                                     </button>
                                 </div>
@@ -1664,43 +1680,38 @@ function toggleGroupConversation(group_id) {
             const chatEmpty = conversationThread.querySelector('.group-chat-empty');
             const chatBodyInner = conversationThread.querySelector('.chat-body-inner');
             var imagesExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
-            var reply_blockquote;
-            if (imagesExtensions.includes(data.file_extension)) {
-                if (data.sub_action === 'reply_file') {
-                    reply_blockquote = `
+            var reply_blockquote = '';
+            if (data.reply_message) {
+                reply_blockquote = `
                     <blockquote class="blockquote overflow-hidden">
                         <h6 class="text-reset text-truncate">Reply to</h6>
-                        <p class="small text-truncate">${data.files_name}</p>
+                        <p class="small text-truncate">${data.reply_message}</p>
                     </blockquote>`
-                }
-                var fileUrls = data.file_urls;
+            }
+
+            if (imagesExtensions.includes(data.file_extension)) {
                 let message_gallery = document.createElement('div');
                 message_gallery.classList.add('message-gallery');
-                if (isReplying == true) {
-                    message_gallery.innerHTML += reply_blockquote
-                }
+                message_gallery.innerHTML += reply_blockquote
+                
                 let rowDiv = document.createElement('div');
                 rowDiv.classList.add('row', 'gx-3');
                 message_gallery.appendChild(rowDiv);
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col');
+                const img = document.createElement('img');
+                img.classList.add('img-fluid', 'rounded');
+                const inputElement = document.createElement('input');
+                inputElement.type = 'hidden'
+                inputElement.classList.add(`image-${data.message_id}`)
+                inputElement.value = `${data.files_name}`
+                img.setAttribute('data-action', 'zoom');
+                img.src = data.file_urls;
 
-                fileUrls.forEach(url => {
-                    const colDiv = document.createElement('div');
-                    colDiv.classList.add('col');
-                    const img = document.createElement('img');
-                    img.classList.add('img-fluid', 'rounded');
-                    const inputElement = document.createElement('input');
-                    inputElement.type = 'hidden'
-                    inputElement.classList.add(`image-${data.message_id}`)
-                    inputElement.value = `${data.files_name}`
-                    img.setAttribute('data-action', 'zoom');
-                    img.src = url;
+                colDiv.appendChild(img);
+                colDiv.appendChild(inputElement);
 
-                    colDiv.appendChild(img);
-                    colDiv.appendChild(inputElement);
-
-                    rowDiv.appendChild(colDiv);
-                });
-
+                rowDiv.appendChild(colDiv);
 
                 if (parseInt(data.sender_id) === parseInt(senderId)) {
                     const receivedMessage = `
@@ -1719,14 +1730,6 @@ function toggleGroupConversation(group_id) {
                                                     </a>
 
                                                     <ul class="dropdown-menu">
-                                                        <li>
-                                                            <a class="dropdown-item d-flex align-items-center group-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
                                                         <li>
                                                             <a class="dropdown-item d-flex align-items-center group-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
@@ -1763,6 +1766,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -1788,14 +1792,6 @@ function toggleGroupConversation(group_id) {
 
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a class="dropdown-item d-flex align-items-center group-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                        <li>
                                                             <a class="dropdown-item d-flex align-items-center group-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
                                                                 <div class="icon">
@@ -1831,6 +1827,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -1839,9 +1836,7 @@ function toggleGroupConversation(group_id) {
                     }
                 }
             } else {
-                var fileUrls = data.file_urls;
                 let receivedMessage = null;
-                fileUrls.forEach(url => {
                 if (parseInt(data.sender_id) === parseInt(senderId)) {
                     receivedMessage = `<div class="message message-out" data-message-id="${data.message_id}">
                         <a href="#" data-bs-toggle="modal" data-bs-target="#modal-profile" class="avatar avatar-responsive">
@@ -1851,9 +1846,10 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                        ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -1861,7 +1857,7 @@ function toggleGroupConversation(group_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h6 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h6>
                                                 <ul class="list-inline text-uppercase extra-small opacity-75 mb-0">
@@ -1909,9 +1905,11 @@ function toggleGroupConversation(group_id) {
 
                     if (MessageContainer) {
                         MessageContainer.innerHTML += receivedMessage;
+
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -1928,9 +1926,10 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                        ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -1938,7 +1937,7 @@ function toggleGroupConversation(group_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -1987,6 +1986,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -1994,7 +1994,6 @@ function toggleGroupConversation(group_id) {
                         }
                     }
                 }
-                })
 
             }
         } else if (data.action === 'handle_upload_with_message') {
@@ -2002,31 +2001,40 @@ function toggleGroupConversation(group_id) {
             const chatEmpty = conversationThread.querySelector('.group-chat-empty');
             const chatBodyInner = conversationThread.querySelector('.chat-body-inner');
             var imagesExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'];
+            let reply_blockquote = ''
+            if (data.reply_message) {    
+                reply_blockquote = `
+                    <blockquote class="blockquote overflow-hidden">
+                        <h6 class="text-reset text-truncate">Reply to</h6>
+                        <p class="small text-truncate">${data.reply_message}</p>
+                    </blockquote>`
+            }
+
             if (imagesExtensions.includes(data.file_extensions)) {
-                var fileUrls = data.file_urls;
                 let message_gallery = document.createElement('div');
                 message_gallery.classList.add('message-gallery');
                 let rowDiv = document.createElement('div');
                 rowDiv.classList.add('row', 'gx-3');
+                message_gallery.innerHTML += reply_blockquote
                 message_gallery.appendChild(rowDiv);
 
-                fileUrls.forEach(url => {
-                    const colDiv = document.createElement('div');
-                    colDiv.classList.add('col');
-                    const img = document.createElement('img');
-                    img.classList.add('img-fluid', 'rounded');
-                    const inputElement = document.createElement('input');
-                    inputElement.type = 'hidden'
-                    inputElement.classList.add(`image-${data.message_id}`)
-                    inputElement.value = `${data.files_name}`
-                    img.setAttribute('data-action', 'zoom');
-                    img.src = url;
+                
+                const colDiv = document.createElement('div');
+                colDiv.classList.add('col');
+                const img = document.createElement('img');
+                img.classList.add('img-fluid', 'rounded');
+                const inputElement = document.createElement('input');
+                inputElement.type = 'hidden'
+                inputElement.classList.add(`image-${data.message_id}`)
+                inputElement.value = `${data.files_name}`
+                img.setAttribute('data-action', 'zoom');
+                img.src = data.file_urls;
 
-                    colDiv.appendChild(img);
-                    colDiv.appendChild(inputElement);
+                colDiv.appendChild(img);
+                colDiv.appendChild(inputElement);
 
-                    rowDiv.appendChild(colDiv);
-                });
+                rowDiv.appendChild(colDiv);
+                
 
 
                 if (parseInt(data.sender_id) === parseInt(senderId)) {
@@ -2046,14 +2054,6 @@ function toggleGroupConversation(group_id) {
                                                     </a>
 
                                                     <ul class="dropdown-menu">
-                                                        <li>
-                                                            <a class="dropdown-item d-flex align-items-center group-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
                                                         <li>
                                                             <a class="dropdown-item d-flex align-items-center group-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
@@ -2079,7 +2079,7 @@ function toggleGroupConversation(group_id) {
                                         </div>
                                         <div class="message-content">
                                             <div class="message-text">
-                                                <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                                <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                             </div>
                                             <div class="message-action">
                                                 <div class="dropdown">
@@ -2133,6 +2133,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -2158,14 +2159,6 @@ function toggleGroupConversation(group_id) {
 
                                                     <ul class="dropdown-menu">
                                                         <li>
-                                                            <a class="dropdown-item d-flex align-items-center group-edit-btn" href="#">
-                                                                <span class="me-auto">Edit</span>
-                                                                <div class="icon">
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit-3"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-                                                                </div>
-                                                            </a>
-                                                        </li>
-                                                        <li>
                                                             <a class="dropdown-item d-flex align-items-center group-reply-btn" href="#">
                                                                 <span class="me-auto">Reply</span>
                                                                 <div class="icon">
@@ -2190,7 +2183,7 @@ function toggleGroupConversation(group_id) {
                                         </div>
                                         <div class="message-content">
                                             <div class="message-text">
-                                                <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                                <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                             </div>
                                             <div class="message-action">
                                                 <div class="dropdown">
@@ -2243,6 +2236,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -2251,7 +2245,6 @@ function toggleGroupConversation(group_id) {
                     }
                 }
             } else {
-                var fileUrls = data.file_urls;
                 let receivedMessage = null;
                 fileUrls.forEach(url => {
                 if (parseInt(data.sender_id) === parseInt(senderId)) {
@@ -2263,9 +2256,10 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                        ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -2273,7 +2267,7 @@ function toggleGroupConversation(group_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -2282,7 +2276,7 @@ function toggleGroupConversation(group_id) {
                                 </div>
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -2328,6 +2322,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -2343,9 +2338,10 @@ function toggleGroupConversation(group_id) {
                             <div class="message-body">
                                 <div class="message-content">
                                     <div class="message-text">
+                                    ${reply_blockquote}
                                         <div class="row align-items-center gx-4">
                                             <div class="col-auto">
-                                                <a href="${url}" class="avatar avatar-sm">
+                                                <a href="${data.file_urls}" class="avatar avatar-sm">
                                                     <div class="avatar-text bg-white text-primary">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-down"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
                                                     </div>
@@ -2353,7 +2349,7 @@ function toggleGroupConversation(group_id) {
                                             </div>
                                             <div class="col overflow-hidden">
                                                 <h5 class="text-truncate text-reset">
-                                                    <a href="${url}" class="text-reset">${data.files_name}</a>
+                                                    <a href="${data.file_urls}" class="text-reset">${data.files_name}</a>
                                                     <input type="hidden" class="file-${data.message_id}" value="${data.files_name}">
                                                 </h5>
                                             </div>
@@ -2362,7 +2358,7 @@ function toggleGroupConversation(group_id) {
                                 </div>
                                 <div class="message-content">
                                     <div class="message-text">
-                                        <pre style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;"><p class="group-message-content">${data.message}</p></pre>
+                                        <pre class="group-message-content" style="font-family: var(--bs-body-font-family);font-size: 15px;font-weight: 400;margin-bottom: 0px;">${data.message}</pre>
                                     </div>
                                     <div class="message-action">
                                         <div class="dropdown">
@@ -2408,6 +2404,7 @@ function toggleGroupConversation(group_id) {
                     } else {
                         if (chatEmpty) {
                             chatEmpty.remove();
+                            chatBodyInner.classList.remove('h-100')
                             MessageContainer = document.createElement('div');
                             MessageContainer.classList.add('py-6', 'py-lg-12');
                             MessageContainer.innerHTML += receivedMessage;
@@ -2431,7 +2428,6 @@ function toggleGroupConversation(group_id) {
             event.stopPropagation();
             if (!isReplying) {
                 const container = event.target.closest('.chat-form');
-            
                 const messageInput = container.querySelector(".chat_message");
                 const message = messageInput.value;
                 if (message !== "") {
@@ -2474,30 +2470,38 @@ function toggleGroupConversation(group_id) {
             event.stopPropagation();
             const messageContainer = event.target.closest('.message');
             const messageText = messageContainer.querySelector('.message-text');
-            const messageContent = messageText.querySelector('.group-message-content');
-            const originalContent = messageContent.textContent;
-            messageContent.remove();
-            const inputField = document.createElement('input');
-            inputField.type = 'text';
-            inputField.value = originalContent;
-            messageText.appendChild(inputField);
-            inputField.focus();
-            inputField.addEventListener('keypress', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault();
-                    let newContent = inputField.value;
-                    if (newContent === '') {
-                        newContent = originalContent;
+            if (messageText) {
+                const messageContent = messageText.querySelector('.group-message-content');
+                const originalContent = messageContent.textContent;
+                messageContent.remove();
+                
+                const inputField = document.createElement('textarea');
+                inputField.className = 'form-control';
+                inputField.style.backgroundColor = '#4fa1ff';
+                inputField.style.borderRadius = '.6rem';
+                inputField.style.borderColor = '#2787f5';
+                inputField.style.color = '#fff';
+                inputField.value = originalContent
+                
+                messageText.appendChild(inputField);
+                inputField.focus();
+                inputField.addEventListener('keypress', function(event) {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        let newContent = inputField.value;
+                        if (newContent === '') {
+                            newContent = originalContent;
+                        }
+                        const messageId = messageContainer.dataset.messageId;
+                        chatSocket.send(JSON.stringify({
+                            'action': 'edit_message',
+                            'messageId': messageId,
+                            'newContent': newContent,
+                        }));
+                        inputField.remove();
                     }
-                    const messageId = messageContainer.dataset.messageId;
-                    chatSocket.send(JSON.stringify({
-                        'action': 'edit_message',
-                        'messageId': messageId,
-                        'newContent': newContent,
-                    }));
-                    inputField.remove();
-                }
-            });
+                });
+            }
 
         } else if (event.target.matches('.group-reply-btn')) {
             event.preventDefault();
@@ -2583,28 +2587,30 @@ function toggleGroupConversation(group_id) {
             chatFooter.insertAdjacentHTML('afterbegin', replyMessage);
             replyRemove = chatFooter.querySelector('.reply');
             
-            groupSendBtn.addEventListener('click', function(event) {
-                event.preventDefault();
-                if (isReplying) {
-                    const messageInput = conversationThread.querySelector(".chat_message");
-                    const message = messageInput.value;
+            if (groupSendBtn) {
+                groupSendBtn.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    if (isReplying) {
+                        const messageInput = conversationThread.querySelector(".chat_message");
+                        const message = messageInput.value;
 
-                    if (message !== "") {
-                        chatSocket.send(JSON.stringify({
-                            'action': 'reply_message',
-                            'subAction': subAction,
-                            'replyTo': replyMessageId,
-                            'message': message,
-                            'group_id': group_id,
-                        }));
+                        if (message !== "") {
+                            chatSocket.send(JSON.stringify({
+                                'action': 'reply_message',
+                                'subAction': subAction,
+                                'replyTo': replyMessageId,
+                                'message': message,
+                                'group_id': group_id,
+                            }));
 
-                        messageInput.value = "";
-                        replyRemove.remove();
-                        isReplying = false;
-                        
+                            messageInput.value = "";
+                            replyRemove.remove();
+                            isReplying = false;
+                            
+                        }
                     }
-                }
-            });
+                });
+            }
 
             replyRemove.addEventListener('click', function(event) {
                 event.preventDefault();
@@ -2617,7 +2623,6 @@ function toggleGroupConversation(group_id) {
             event.preventDefault();
             event.stopPropagation();
             const messageContainer = event.target.closest('.message');
-            console.log(messageContainer)
             const messageId = messageContainer.dataset.messageId;
             chatSocket.send(JSON.stringify({
                 'action': 'delete_message',
@@ -2654,8 +2659,10 @@ function toggleGroupConversation(group_id) {
             member_id = container.dataset.memberId;
             chatSocket.send(JSON.stringify({
                 'action': 'mute_member',
+                'sender_id': conversationThread.dataset.senderId,
                 'group_id': group_id,
                 'member_id': member_id,
+
             }));
         }
     });

@@ -44,15 +44,24 @@
                                 <div class="form-floating mb-4">
                                     <input type="password" name="password1" class="form-control" required id="signup-password" placeholder="Password">
                                     <label for="signup-password">Password</label>
-                                    {% for error in registration_form.password.errors %}
+                                    {% for error in registration_form.password1.errors %}
                                         <p class="text-danger">{{ error }}</p>
                                     {% endfor %}
                                 </div>
                             </div>
-                            
+                            <div class="col-12">
+                                <div class="form-floating mb-4">
+                                    <input type="password" name="password2" class="form-control" required id="signup-password" placeholder="Password">
+                                    <label for="signup-password">Confirm Password</label>
+                                    {% for error in registration_form.password2.errors %}
+                                        <p class="text-danger">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
                             <div class="col-12">
                                 <button class="btn btn-block btn-lg btn-primary w-100" type="submit">Create Account</button>
                             </div>
+                            
                         </form>
                     </div>
                 </div>

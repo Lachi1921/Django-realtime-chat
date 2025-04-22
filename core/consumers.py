@@ -1,7 +1,7 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from asgiref.sync import sync_to_async
 from django.core.serializers import serialize
-from .models import *
+from core.models import Profile, Social, NotificationSetting, Group, Thread, Message, Mute, Files
 from django.db.models import Q
 import json
 import os

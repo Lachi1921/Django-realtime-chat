@@ -1,9 +1,10 @@
-# 💬 DjChat
+# DjChat
 
-**DjChat** is a **real-time chat application** built with **Django** and **Django Channels**.  
-It supports **one-on-one messaging**, **group chats**, and **file sharing** .
+[![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)]()
 
-Designed with scalability and simplicity in mind.
+DjChat is a real-time chat application built with Django and Django Channels.
+It supports one-on-one messaging, group chats, message replies, and file sharing (images, audio, video, documents).
+DjChat is designed for simplicity and scalability so you can run it locally for development or deploy it with a proper ASGI setup for production.
 
 ---
 

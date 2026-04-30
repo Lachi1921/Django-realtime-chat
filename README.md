@@ -2,43 +2,26 @@
 
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue)]()
 
-DjChat is a real-time chat application built with Django and Django Channels.
-It supports one-on-one messaging, group chats, message replies, and file sharing (images, audio, video, documents).
-DjChat is designed for simplicity and scalability so you can run it locally for development or deploy it with a proper ASGI setup for production.
-
----
-
-## Overview
-
-DjChat enables users to:
-- Create **public or private chat rooms**
-- Exchange **messages, images, videos, and files** in real time
-- **Reply** to specific messages
-- Manage **notifications** and **mute** users or groups
+DjChat is a real-time chat application built with Django, Django Channels, and JavaScript on the frontend. It supports one-on-one messaging, group chats, messages (send, reply, edit, delete), and media sharing (images, audio, video, documents), along with secure authentication and profile management. It has clean backend logic for reliable, fast communication.
 
 ---
 
 ## Features
-
-### Core Features
--  **Real-time messaging** using Django Channels and WebSockets  
--  **User authentication and authorization**  
--  **Public & private chat rooms**  
--  **Group chat support** with member management (add, remove, mute)  
--  **Message replies**
--  **Media sharing** (images, videos, audio, documents)  
--  **Notifications** for new messages and events  
--  **Scalable and maintainable** backend architecture  
+-  Real-time messaging using Django Channels and WebSockets  
+-  User authentication and authorization  
+-  Public & private chat rooms
+-  Group chat support with member management (add, remove, mute)  
+-  Messages (send, reply, edit, delete)
+-  Media sharing (images, videos, audio, documents)  
+-  Clean and maintainable backend in django & python
 
 ---
 
 ## Tech Stack
 
-- **Backend:** Django, Django Channels  
-- **Frontend:** JavaScript
-- **WebSocket Protocol:** ASGI  
-- **Database:** PostgreSQL / SQLite 
-- **Storage:** Local or cloud file storage for uploads  
+- Backend: Django, Django Channels
+- Frontend: JavaScript (Django Templates)
+- Database: PostgreSQL / SQLite
 
 ---
 

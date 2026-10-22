@@ -13,8 +13,6 @@ DjChat is a real-time chat application built with Django, Django Channels, and J
 -  Group chat support with member management (add, remove, mute)  
 -  Messages (send, reply, edit, delete)
 -  Media sharing (images, videos, audio, documents)  
--  Clean and maintainable backend in django & python
-
 ---
 
 ## Tech Stack
